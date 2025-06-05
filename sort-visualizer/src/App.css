@@ -1,0 +1,80 @@
+
+.App {
+  font-family: Arial, sans-serif;
+  text-align: center;
+  padding: 20px;
+}
+
+.container {
+  display: flex;
+  justify-content: space-around;
+  align-items: flex-start;
+  margin-top: 20px;
+}
+
+.visualization {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  height: 300px;
+  padding: 10px;
+  border: 1px solid #ccc;
+  overflow-x: auto;
+  background: #f9f9f9;
+}
+
+.bar {
+  width: 30px;
+  min-height: 20px;
+  background-color: #4da6ff;
+  color: white;
+  text-align: center;
+  font-weight: bold;
+  border-radius: 4px 4px 0 0;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  transition: height 0.4s ease, background-color 0.3s ease;
+}
+
+.comparing {
+  background-color: orange;
+}
+
+.swapped {
+  background-color: green;
+}
+
+.instruction {
+  margin-top: 15px;
+  font-size: 1.2rem;
+  color: #444;
+  min-height: 30px;
+}
+
+.slider {
+  width: 100%;
+  margin-top: 10px;
+}
+
+.info-panel {
+  width: 35%;
+  text-align: left;
+}
+
+pre {
+  background: #f5f5f5;
+  padding: 10px;
+  font-size: 0.9rem;
+  overflow-x: auto;
+}
+
+button {
+  margin-right: 8px;
+  padding: 8px 12px;
+}
+
+
