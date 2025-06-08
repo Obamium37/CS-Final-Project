@@ -8,8 +8,9 @@ import {
   RangeInput,
   Text,
 } from 'grommet';
+import { Sun, Moon } from 'grommet-icons';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { materialLight } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import { materialLight, materialDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
 const theme = {
   global: {
@@ -96,6 +97,7 @@ function App() {
   const [comparisons, setComparisons] = useState(0);
   const [algorithm, setAlgorithm] = useState('bubble');
   const [highlightLine, setHighlightLine] = useState(null);
+  const [themeMode, setThemeMode] = useState('light');
 
   const reset = () => {
     setArray(generateRandomArray());
@@ -113,11 +115,20 @@ function App() {
     if (algo === 'bubble') {
       for (let i = 0; i < array.length; i++) {
         for (let j = 0; j < array.length - i - 1; j++) {
-          steps.push({ array: [...array], comparing: [j, j + 1], message: `Comparing ${array[j]} and ${array[j + 1]}` });
+          const a = array[j], b = array[j + 1];
+          steps.push({
+            array: [...array],
+            comparing: [j, j + 1],
+            explanation: `Comparing elements at index ${j} (${a}) and ${j + 1} (${b}).`
+          });
           compCount++;
-          if (array[j] > array[j + 1]) {
-            [array[j], array[j + 1]] = [array[j + 1], array[j]];
-            steps.push({ array: [...array], swapped: [j, j + 1], message: `Swapped ${array[j]} and ${array[j + 1]}` });
+          if (a > b) {
+            [array[j], array[j + 1]] = [b, a];
+            steps.push({
+              array: [...array],
+              swapped: [j, j + 1],
+              explanation: `Swapped elements ${a} and ${b} at indices ${j} and ${j + 1}.`
+            });
           }
         }
       }
@@ -125,34 +136,60 @@ function App() {
       for (let i = 0; i < array.length - 1; i++) {
         let minIdx = i;
         for (let j = i + 1; j < array.length; j++) {
-          steps.push({ array: [...array], comparing: [minIdx, j], message: `Comparing ${array[minIdx]} and ${array[j]}` });
+          const a = array[minIdx], b = array[j];
+          steps.push({
+            array: [...array],
+            comparing: [minIdx, j],
+            explanation: `Comparing current minimum ${a} (index ${minIdx}) with ${b} (index ${j}).`
+          });
           compCount++;
-          if (array[j] < array[minIdx]) {
+          if (b < a) {
             minIdx = j;
           }
         }
         if (minIdx !== i) {
-          [array[i], array[minIdx]] = [array[minIdx], array[i]];
-          steps.push({ array: [...array], swapped: [i, minIdx], message: `Swapped ${array[i]} and ${array[minIdx]}` });
+          const a = array[i], b = array[minIdx];
+          [array[i], array[minIdx]] = [b, a];
+          steps.push({
+            array: [...array],
+            swapped: [i, minIdx],
+            explanation: `Swapped new minimum ${b} with ${a} at index ${i}.`
+          });
         }
       }
     } else if (algo === 'insertion') {
       for (let i = 1; i < array.length; i++) {
-        let key = array[i];
+        const key = array[i];
         let j = i - 1;
-        steps.push({ array: [...array], comparing: [j, i], message: `Comparing ${array[j]} and ${key}` });
+        steps.push({
+          array: [...array],
+          comparing: [j, i],
+          explanation: `Start inserting ${key} (index ${i}), compare with ${array[j]} at index ${j}.`
+        });
         compCount++;
         while (j >= 0 && array[j] > key) {
           array[j + 1] = array[j];
-          steps.push({ array: [...array], swapped: [j, j + 1], message: `Moved ${array[j]} to position ${j + 1}` });
-          j = j - 1;
+          steps.push({
+            array: [...array],
+            swapped: [j, j + 1],
+            explanation: `Shifted ${array[j]} from index ${j} to ${j + 1}.`
+          });
+          j--;
           if (j >= 0) {
-            steps.push({ array: [...array], comparing: [j, i], message: `Comparing ${array[j]} and ${key}` });
+            steps.push({
+              array: [...array],
+              comparing: [j, i],
+              explanation: `Continue comparing ${array[j]} at index ${j} with key ${key}.`
+            });
             compCount++;
           }
         }
         array[j + 1] = key;
-        steps.push({ array: [...array], swapped: [j + 1], message: `Inserted ${key} at position ${j + 1}` });
+        steps.push({
+          array: [...array],
+          swapped: [j + 1],
+          explanation: `Inserted key ${key} at index ${j + 1}.`
+        });
       }
     }
 
@@ -182,12 +219,32 @@ function App() {
   const visualArray = steps.length ? steps[currentStep].array : array;
   const comparing = steps[currentStep]?.comparing || [];
   const swapped = steps[currentStep]?.swapped || [];
-  const instruction = steps[currentStep]?.message || 'Press "Start Sorting" to begin';
+  const explanation = steps[currentStep]?.explanation || 'Press "Start Sorting" to begin.';
 
   return (
-    <Grommet theme={theme} full>
+    <Grommet theme={theme} full themeMode={themeMode}>
       <Box pad="medium" gap="medium" align="center">
         <Heading level={2}>Sorting Algorithm Visualization</Heading>
+
+        <Box direction="row" gap="small" align="center">
+          <Text>Algorithm:</Text>
+          <Select
+            options={Object.entries(ALGORITHMS).map(([k, v]) => ({ label: k, value: v }))}
+            value={{
+              label: Object.keys(ALGORITHMS).find((k) => ALGORITHMS[k] === algorithm),
+              value: algorithm,
+            }}
+            onChange={({ option }) => setAlgorithm(option.value)}
+            disabled={isPlaying}
+          />
+          <Box direction="row" gap="small" align="center">
+            <Button
+              icon={themeMode === 'dark' ? <Sun /> : <Moon />}
+              onClick={() => setThemeMode(prev => (prev === 'light' ? 'dark' : 'light'))}
+              tip={`Switch to ${themeMode === 'light' ? 'dark' : 'light'} mode`}
+            />
+          </Box>
+        </Box>
 
         <Box direction="row-responsive" gap="large" width="xlarge" align="start">
           <Box
@@ -195,41 +252,42 @@ function App() {
             background="light-2"
             round="small"
             pad="small"
-            height="medium"
+            height={{ min: '400px', max: '500px' }}
             width="large"
             overflow="auto"
             border={{ color: 'light-4', size: 'small' }}
           >
             <Box direction="row" gap="small" align="end" height="100%">
               {visualArray.map((v, i) => {
-                const color = swapped.includes(i)
+                const isSwapped = swapped.includes(i);
+                const isComparing = comparing.includes(i);
+                const color = isSwapped
                   ? 'status-ok'
-                  : comparing.includes(i)
+                  : isComparing
                   ? 'status-warning'
                   : 'brand';
 
+                const labelColor = isSwapped
+                  ? 'status-ok'
+                  : isComparing
+                  ? 'status-warning'
+                  : 'dark-3';
+
                 return (
-                  <Box
-                    key={i}
-                    width="small"
-                    height={{ min: 'xxsmall', max: '100%' }}
-                    align="center"
-                    justify="end"
-                  >
+                  <Box key={i} width="small" align="center" gap="xxsmall">
                     <Box
                       background={color}
                       width="xsmall"
-                      height={`${Math.min(v * 1.8, 100)}%`}
+                      height={`${Math.max(v * 4, 20)}px`}
                       round={{ corner: 'top', size: 'xsmall' }}
                       align="center"
                       justify="end"
                       pad="xxsmall"
                       style={{ transition: 'height 0.4s ease, background-color 0.3s ease' }}
                     >
-                      <Text size="xsmall" color="white">
-                        {v}
-                      </Text>
+                      <Text size="xsmall" color="white">{v}</Text>
                     </Box>
+                    <Text size="xsmall" color={labelColor}>{i}</Text>
                   </Box>
                 );
               })}
@@ -237,29 +295,26 @@ function App() {
           </Box>
 
           <Box width="medium" gap="small">
-            <Text weight="bold">Algorithm</Text>
-            <Select
-              options={Object.entries(ALGORITHMS).map(([k, v]) => ({ label: k, value: v }))}
-              value={{
-                label: Object.keys(ALGORITHMS).find((k) => ALGORITHMS[k] === algorithm),
-                value: algorithm,
-              }}
-              onChange={({ option }) => setAlgorithm(option.value)}
-              disabled={isPlaying}
-            />
-
             <Text weight="bold">Code (Java)</Text>
-            <Box width="large">
+            <Box width="xlarge">
               <SyntaxHighlighter
                 language="java"
-                style={materialLight}
+                style={themeMode === 'dark' ? materialDark : materialLight}
                 wrapLines={true}
                 showLineNumbers={true}
-                lineProps={(lineNumber) =>
-                  lineNumber === highlightLine
-                    ? { style: { backgroundColor: '#ffeaa7', display: 'block' } }
-                    : { style: { display: 'block' } }
-                }
+                lineProps={(lineNumber) => {
+                  const isActive = lineNumber === highlightLine;
+                  return {
+                    style: {
+                      backgroundColor: isActive
+                        ? themeMode === 'dark'
+                          ? '#264653' // Dark-mode friendly
+                          : '#ffeaa7' // Light mode
+                        : 'transparent',
+                      display: 'block',
+                    },
+                  };
+                }}
                 customStyle={{
                   fontSize: '0.85rem',
                   maxHeight: '400px',
@@ -276,19 +331,12 @@ function App() {
               <Text>Comparisons: {comparisons}</Text>
             </Box>
 
-            <Box direction="row" gap="small">
-              <Button
-                label={isPlaying ? 'Pause' : 'Play'}
-                onClick={() => setIsPlaying((p) => !p)}
-                disabled={!steps.length}
-                primary
-              />
-              <Button
-                label="Start Sorting"
-                onClick={() => generateSteps(array, algorithm)}
-                disabled={isPlaying}
-              />
-              <Button label="Reset" onClick={reset} disabled={isPlaying} />
+            <Box direction="row" gap="small" justify="center" wrap pad={{ vertical: 'small' }}>
+              <Button label="Previous" onClick={() => setCurrentStep(s => Math.max(s - 1, 0))} disabled={isPlaying || currentStep <= 0} primary color="accent-2" />
+              <Button label={isPlaying ? 'Pause' : 'Play'} onClick={() => setIsPlaying((p) => !p)} disabled={!steps.length} primary color="status-warning" />
+              <Button label="Next" onClick={() => setCurrentStep(s => Math.min(s + 1, steps.length - 1))} disabled={isPlaying || currentStep >= steps.length - 1} primary color="accent-2" />
+              <Button label="Start Sorting" onClick={() => generateSteps(array, algorithm)} disabled={isPlaying} primary color="status-ok" />
+              <Button label="Reset" onClick={reset} disabled={isPlaying} primary color="status-critical" />
             </Box>
 
             <Text>Speed: {speed} ms</Text>
@@ -304,7 +352,7 @@ function App() {
 
         <Box width="xlarge" align="center" pad={{ top: 'small' }}>
           <Text align="center" size="large" color="dark-3" margin="small">
-            {instruction}
+            💡 {explanation}
           </Text>
           {steps.length > 0 && (
             <RangeInput
