@@ -14,8 +14,23 @@ import { materialLight, materialDark } from 'react-syntax-highlighter/dist/esm/s
 
 const theme = {
   global: {
-    font: {
-      family: 'Arial, sans-serif',
+    font: { family: 'Arial, sans-serif' },
+    colors: {
+      brand: '#6d4cff',
+      'accent-1': '#ffb400',
+      'accent-2': '#40c8ff',
+      'status-warning': '#f0c419',
+      'status-ok': '#00C781',
+      'status-critical': '#FF4040',
+      dark: '#333333',
+      'dark-1': '#444444',
+      'dark-2': '#555555',
+      'dark-3': '#666666',
+      // Optional: lighter light mode
+      light: '#f9f9f9',
+      'light-1': '#f5f5f5',
+      'light-2': '#e0e0e0',
+      'light-3': '#cccccc',
     },
   },
 };
@@ -44,7 +59,7 @@ const JAVA_CODES = {
 }`,
     stepsToLine: (step) => {
       if (step.swapped) return 6;
-      if (step.comparing) return 5;
+      if (step.comparing) return 4;
       return 4;
     },
   },
@@ -119,7 +134,7 @@ function App() {
           steps.push({
             array: [...array],
             comparing: [j, j + 1],
-            explanation: `Comparing elements at index ${j} (${a}) and ${j + 1} (${b}).`
+            explanation: `Comparing elements at index ${j} (${a}) and ${j + 1} (${b}). If ${j} is greater than ${j+1}, swap them.`
           });
           compCount++;
           if (a > b) {
@@ -140,7 +155,7 @@ function App() {
           steps.push({
             array: [...array],
             comparing: [minIdx, j],
-            explanation: `Comparing current minimum ${a} (index ${minIdx}) with ${b} (index ${j}).`
+            explanation: `Comparing current minimum ${a} (index ${minIdx}) with ${b} (index ${j}). If ${b} is less than ${a}, update minimum index.`
           });
           compCount++;
           if (b < a) {
@@ -326,19 +341,45 @@ function App() {
               </SyntaxHighlighter>
             </Box>
 
-            <Box direction="row" justify="between">
+            <Box direction="row" justify="between"> 
               <Text>Step: {steps.length ? currentStep + 1 : 0} / {steps.length}</Text>
               <Text>Comparisons: {comparisons}</Text>
             </Box>
 
             <Box direction="row" gap="small" justify="center" wrap pad={{ vertical: 'small' }}>
-              <Button label="Previous" onClick={() => setCurrentStep(s => Math.max(s - 1, 0))} disabled={isPlaying || currentStep <= 0} primary color="accent-2" />
-              <Button label={isPlaying ? 'Pause' : 'Play'} onClick={() => setIsPlaying((p) => !p)} disabled={!steps.length} primary color="status-warning" />
-              <Button label="Next" onClick={() => setCurrentStep(s => Math.min(s + 1, steps.length - 1))} disabled={isPlaying || currentStep >= steps.length - 1} primary color="accent-2" />
-              <Button label="Start Sorting" onClick={() => generateSteps(array, algorithm)} disabled={isPlaying} primary color="status-ok" />
-              <Button label="Reset" onClick={reset} disabled={isPlaying} primary color="status-critical" />
-            </Box>
+              <Button
+                label={isPlaying ? 'Pause' : 'Start'}
+                onClick={() => {
+                  if (!steps.length) generateSteps(array, algorithm);
+                  setIsPlaying((prev) => !prev);
+                }}
+                primary
+                color="status-warning"
+              />
 
+              <Button
+                label="Previous"
+                onClick={() => setCurrentStep(s => Math.max(s - 1, 0))}
+                disabled={currentStep <= 0}
+                primary
+                color="accent-1"
+              />
+
+              <Button
+                label="Next"
+                onClick={() => setCurrentStep(s => Math.min(s + 1, steps.length - 1))}
+                disabled={currentStep >= steps.length - 1}
+                primary
+                color="accent-2"
+              />
+
+              <Button
+                label="Reset"
+                onClick={reset}
+                primary
+                color="status-critical"
+              />
+            </Box>
             <Text>Speed: {speed} ms</Text>
             <RangeInput
               min={100}
